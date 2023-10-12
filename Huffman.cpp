@@ -9,12 +9,14 @@ using namespace std;
 class TreeNode
 {
 public:
-    map<int, string> leftMap;
-    map<int, string> rightMap;
-    TreeNode* leftChild;
-    TreeNode* rightChild;
+    int freq;
+    string code;
+    string symbol;
 
-    TreeNode() : leftChild(nullptr), rightChild(nullptr) {}
+    TreeNode *leftChild;
+    TreeNode *rightChild;
+
+    TreeNode() : leftChild(nullptr), rightChild(nullptr), freq(0) {}
 };
 
 int create_frequency_map(map<string, int> &myMap)
@@ -70,14 +72,7 @@ map<int, string> sort_frequency_map(map<string, int> &mapToSort)
             }
         }
 
-        cout << tmpMinStr << " " << tmpMinKey << " penis" << endl;
-
         sortedMap[tmpMinKey] = tmpMinStr;
-        for (const auto &pair : sortedMap)
-        {
-            cout << "SortedKey: " << pair.first << ", Value: " << pair.second << std::endl;
-        }
-
         mapToSort.erase(tmpMinStr);
     }
     return sortedMap;
@@ -86,18 +81,76 @@ map<int, string> sort_frequency_map(map<string, int> &mapToSort)
 int write_table_in_file(map<int, string> mapToWrite)
 {
     ofstream outputFile("codetext.txt");
-    if(!outputFile.is_open())
+    if (!outputFile.is_open())
     {
         cout << "Не удалось открыть файл для записи" << endl;
         return 0;
     }
 
-    for(const auto &pair : mapToWrite)
+    for (const auto &pair : mapToWrite)
     {
         outputFile << pair.second << " " << pair.first << " ";
     }
     outputFile << "TAB " << '\n';
     return 1;
+}
+
+void create_list_of_freq(list<pair<int, TreeNode>> &listOfFreq, map<int, string> &mapToParse)
+{
+    for (const auto &pair : mapToParse)
+    {
+        int freq = pair.first;
+        string symbol = pair.second;
+
+        // Создаем TreeNode для текущей пары
+        TreeNode node;
+        node.freq = freq;
+        node.symbol = symbol;
+
+        // Добавляем пару (freq, TreeNode) в список
+        listOfFreq.push_back(make_pair(freq, node)); //можно добавлять в конец так как сразу будет отсортирован
+    }
+}
+
+bool compareElements(const pair<int, TreeNode>& a, const pair<int, TreeNode>& b) {
+    if (a.first < b.first) {
+        return true;
+    } else if (a.first > b.first) {
+        return false;
+    }
+    // Если int равны, то переходим к следующей паре
+    return true;
+}
+
+void sort_list_of_freq(list<pair<int, TreeNode>> &listOfFreq)
+{
+    listOfFreq.sort(compareElements);
+}
+
+void build_huffman_tree(list<pair<int, TreeNode>> &listOfFreq)
+{
+    while (listOfFreq.size() > 1)
+    {
+        // Сортируем лист по частотам
+        sort_list_of_freq(listOfFreq);
+
+        // Получаем два узла с наименьшими частотами
+        TreeNode leftNode = listOfFreq.front().second;
+        listOfFreq.pop_front();
+        TreeNode rightNode = listOfFreq.front().second;
+        listOfFreq.pop_front();
+
+        // Создаем новый узел с суммой частот
+        TreeNode parentNode;
+        parentNode.freq = leftNode.freq + rightNode.freq;
+        parentNode.symbol = leftNode.symbol + rightNode.symbol;
+        parentNode.leftChild = new TreeNode(leftNode);
+        parentNode.rightChild = new TreeNode(rightNode);
+
+        // Добавляем новый узел в список
+        listOfFreq.push_back(make_pair(parentNode.freq, parentNode));
+    }
+    // В listOfFreq останется только один элемент - корневой узел дерева Хаффмана
 }
 
 int main()
@@ -111,7 +164,7 @@ int main()
     if (menuFlag == 1)
     {
         map<string, int> frequencyOfSymbols;
-        map<int, string> sortedFrequencyOfSymbols;
+        map<int, string> sortedFrequencyOfSymbolsMap;
 
         if (!create_frequency_map(frequencyOfSymbols))
         {
@@ -119,17 +172,25 @@ int main()
             return 1;
         }
 
-        sortedFrequencyOfSymbols = sort_frequency_map(frequencyOfSymbols);
+        sortedFrequencyOfSymbolsMap = sort_frequency_map(frequencyOfSymbols);
 
-        if(!write_table_in_file(sortedFrequencyOfSymbols)) return 1;
+        if (!write_table_in_file(sortedFrequencyOfSymbolsMap))
+            return 1;
 
+        list<pair<int, TreeNode>> myList;
+        create_list_of_freq(myList, sortedFrequencyOfSymbolsMap);
 
-        // for (const auto &pair : sortedFrequencyOfSymbols)
-        // {
-        //     // pair.first - ключ
-        //     // pair.second - значение
-        //     cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-        // }
+        for (const auto &pair : myList)
+        {
+            cout << "Freq: " << pair.first << ", Symbol: " << pair.second.symbol << ", FreqInNode: " << pair.second.freq << endl;
+        }
+
+        build_huffman_tree(myList);
+
+        for (const auto &pair : myList)
+        {
+            cout << "Freq: " << pair.first << ", Symbol: " << pair.second.symbol << ", FreqInNode: " << pair.second.freq << endl;
+        }
 
     }
     else if (menuFlag == 2)
