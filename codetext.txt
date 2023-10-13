@@ -1,1 +1,1 @@
-cr 1 sp 2 b 3 a 5 TAB 
+cr 1 c 1 b 3 a 3 TAB 
