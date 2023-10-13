@@ -45,7 +45,7 @@ int create_frequency_map(map<string, int> &myMap)
         {
             key = string(1, ch);
         }
-        //cout << "key:" << key << endl;
+        // cout << "key:" << key << endl;
 
         // Используйем оператор [] для увеличения счетчика
         myMap[key] += 1;
@@ -53,9 +53,9 @@ int create_frequency_map(map<string, int> &myMap)
     key = "cr";
     map<string, int>::iterator it = myMap.find(key);
 
-    if(it->first == key)
+    if (it->first == key)
     {
-       myMap["cr"] /= 2;
+        myMap["cr"] /= 2;
     }
 
     return 1;
@@ -189,21 +189,8 @@ int main()
             return 1;
         }
 
-        // cout << "FIRST" << endl;
-        // for (auto &pair : frequencyOfSymbols)
-        // {
-        //     cout << "Freq: " << pair.first << " "
-        //          << "Symb: " << pair.second << endl;
-        // }
-
         sortedFrequencyOfSymbolsList = sort_frequency_map(frequencyOfSymbols);
 
-        // cout << "SECOND" << endl;
-        // for (auto &pair : sortedFrequencyOfSymbolsList)
-        // {
-        //     cout << "Freq: " << pair.first << " "
-        //          << "Symb: " << pair.second << endl;
-        // }
         sort_list_of_freq_not_node(sortedFrequencyOfSymbolsList);
 
         if (!write_table_in_file(sortedFrequencyOfSymbolsList))
@@ -212,15 +199,8 @@ int main()
         list<pair<int, TreeNode>> myList;
         create_list_of_freq(myList, sortedFrequencyOfSymbolsList);
 
-        //cout << "THIRD" << endl;
-        // for (const auto &pair : sortedFrequencyOfSymbolsList)
-        // {
-        //     cout << "Freq: " << pair.first << ", Symbol: " << pair.second << endl;
-        // }
-
         build_huffman_tree(myList);
 
-        // cout << "FOURGHT" << endl;
         for (const auto &pair : myList)
         {
             cout << "Freq: " << pair.first << ", Symbol: " << pair.second.symbol << ", FreqInNode: " << pair.second.freq << endl;
