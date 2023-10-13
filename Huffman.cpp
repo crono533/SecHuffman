@@ -170,6 +170,23 @@ void build_huffman_tree(list<pair<int, TreeNode>> &listOfFreq)
     // В listOfFreq останется только один элемент - корневой узел дерева Хаффмана
 }
 
+void generate_huffman_codes(TreeNode *rootNode, string code, map<string, string> &huffmanCodes)
+{
+    if (rootNode == nullptr)
+        return;
+
+    if (rootNode->leftChild == nullptr && rootNode->rightChild == nullptr)
+    {
+        // Этот узел представляет символ, сохраняем его код
+        huffmanCodes[rootNode->symbol] = code;
+        return;
+    }
+
+    // Рекурсивно спускаемся по левой и правой ветви
+    generate_huffman_codes(rootNode->leftChild, code + "0", huffmanCodes);
+    generate_huffman_codes(rootNode->rightChild, code + "1", huffmanCodes);
+}
+
 int main()
 {
     int menuFlag = 0;
@@ -204,6 +221,15 @@ int main()
         for (const auto &pair : myList)
         {
             cout << "Freq: " << pair.first << ", Symbol: " << pair.second.symbol << ", FreqInNode: " << pair.second.freq << endl;
+        }
+
+        map<string, string> huffmanCodes;
+        TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
+        generate_huffman_codes(root, "", huffmanCodes);
+
+        for (const auto &pair : huffmanCodes)
+        {
+            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
         }
     }
     else if (menuFlag == 2)
