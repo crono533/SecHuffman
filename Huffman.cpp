@@ -217,21 +217,22 @@ bool fill_codetext_file(map<string, string> huffmanCodes)
         }
     }
 
-    cout << message;
+    // cout << message;
+    // cout << endl << message.size();
 
-    int byteCount = message.size() / 8;
-    int lastBits = message.size() % 8;
 
     int byte_count = message.size() / 8; // 1 byte = 8 bits
     int modulo = message.size() % 8;
-
+    bitset<8> b;
     int i = 0;
     for (; i < byte_count; ++i)
     {
-        bitset<8> b(message.substr(i * 8, 8));
+        b = bitset<8>(message.substr(i * 8, 8));
         char value = b.to_ulong();
         fileToWriteCodes.write(reinterpret_cast<char *>(&value), sizeof value);
+        
     }
+    
     if (modulo > 0)
     {
         bitset<8> b(message.substr(i * 8, modulo));
@@ -259,32 +260,77 @@ void generate_huffman_codes(TreeNode *rootNode, string code, map<string, string>
     generate_huffman_codes(rootNode->rightChild, code + "1", huffmanCodes);
 }
 
-int string_to_int(const std::string& str) 
+int string_to_int(const std::string &str)
 {
     int result;
     std::istringstream iss(str);
 
-    if (!(iss >> result)) {
-        //не удалось преобразовать строку в int
+    if (!(iss >> result))
+    {
+        // не удалось преобразовать строку в int
         std::cerr << "Ошибка преобразования строки в int." << std::endl;
     }
     return result;
 }
 
-void parse_table_from_file(list<pair<int, string>> &listOfFreq)
+int parse_table_from_file(list<pair<int, string>> &listOfFreq)
 {
     ifstream table("codetext.txt", ifstream::binary);
     string line;
+    int countOfSymbols = 0;
+    bool inTable = false; // Флаг, указывающий, что мы находимся в таблице
 
-    bool inTable = false;  // Флаг, указывающий, что мы находимся в таблице
-
-    while (getline(table, line)) {
+    while (getline(table, line))
+    {
         istringstream iss(line);
         string symbol;
         int key;
 
-        while (iss >> symbol >> key) {
+        while (iss >> symbol >> key)
+        {
             listOfFreq.push_back(make_pair(key, symbol));
+            countOfSymbols += key;
+        }
+    }
+    return countOfSymbols;
+}
+
+void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbols)
+{
+    ifstream readbleFile("codetext.txt", ifstream::binary);
+    ofstream writableFile("decode.txt");
+    string line;
+
+    while (getline(readbleFile, line))
+    {
+        if (line.find("TAB") != string::npos)
+        {
+            break;
+        }
+    }
+
+    char buffer;
+    char bit;
+    std::bitset<8> bitset; // Буфер для чтения 8 бит
+    line.clear();
+
+    while (readbleFile.get(buffer)) {
+        bitset = std::bitset<8>(buffer); // Преобразовать байт в биты
+        for (int i = 7; i >= 0; i--) {
+            bit = bitset[i] ? '1' : '0';
+            line += string(1, bit);
+            for(const auto &pair : huffmanCodes)
+            {
+                if(pair.second == line)
+                {
+                    //cout << pair.first <<" " << pair.second << endl;
+                    if(pair.first == "sp"){writableFile <<" ";}
+                    else if(pair.first == "cr"){writableFile << '\n';}
+                    else {writableFile<< pair.first;}
+                    line.clear();
+                    countOfSymbols--;
+                }
+            }
         }
     }
 }
@@ -324,22 +370,36 @@ int main()
         TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
         generate_huffman_codes(root, "", huffmanCodes);
 
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
 
         fill_codetext_file(huffmanCodes);
-
+        cout << "Успешно сжато";
     }
     else if (menuFlag == 2)
     {
+        int countOfSymbols = 0;
         list<pair<int, string>> sortedFrequencyOfSymbolsList;
-        parse_table_from_file(sortedFrequencyOfSymbolsList);
-        for (const auto &pair : sortedFrequencyOfSymbolsList)
-        {
-            cout << "Key: " << pair.first << ", Symbol: " << pair.second << endl;
-        }
+        countOfSymbols = parse_table_from_file(sortedFrequencyOfSymbolsList);
+        //sort_list_of_freq_not_node(sortedFrequencyOfSymbolsList);
+
+
+        list<pair<int, TreeNode>> myList;
+        create_list_of_freq(myList, sortedFrequencyOfSymbolsList);
+        build_huffman_tree(myList);
+
+        map<string, string> huffmanCodes;
+        TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
+        generate_huffman_codes(root, "", huffmanCodes);
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
+
+        decode_huffman_message(huffmanCodes, countOfSymbols);
+        cout << "Успешно распаковано";
 
     }
     else
