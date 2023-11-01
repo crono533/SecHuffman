@@ -223,11 +223,11 @@ bool fill_codetext_file(map<string, string> huffmanCodes)
 
     int byte_count = message.size() / 8; // 1 byte = 8 bits
     int modulo = message.size() % 8;
-    bitset<8> b;
+
     int i = 0;
     for (; i < byte_count; ++i)
     {
-        b = bitset<8>(message.substr(i * 8, 8));
+        bitset<8> b(message.substr(i * 8, 8));
         char value = b.to_ulong();
         fileToWriteCodes.write(reinterpret_cast<char *>(&value), sizeof value);
         
@@ -235,7 +235,7 @@ bool fill_codetext_file(map<string, string> huffmanCodes)
     
     if (modulo > 0)
     {
-        bitset<8> b(message.substr(i * 8, modulo));
+        bitset<8> b(message.substr(i * 8, 3));
         char value = b.to_ulong();
         fileToWriteCodes.write(reinterpret_cast<char *>(&value), sizeof value);
     }
@@ -318,7 +318,7 @@ void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbol
         bitset = std::bitset<8>(buffer); // Преобразовать байт в биты
         for (int i = 7; i >= 0; i--) {
             bit = bitset[i] ? '1' : '0';
-            line += string(1, bit);
+            line += bit;
             for(const auto &pair : huffmanCodes)
             {
                 if(pair.second == line)
@@ -326,7 +326,7 @@ void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbol
                     //cout << pair.first <<" " << pair.second << endl;
                     if(pair.first == "sp"){writableFile <<" ";}
                     else if(pair.first == "cr"){writableFile << '\n';}
-                    else {writableFile<< pair.first;}
+                    else {writableFile << pair.first;}
                     line.clear();
                     countOfSymbols--;
                 }
