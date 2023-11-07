@@ -23,7 +23,7 @@ public:
 
 int create_frequency_map(map<string, int> &myMap)
 {
-    ifstream readbleFile("text.txt", ifstream::binary); // открывает файл для чтения в бинарном формате
+    ifstream readbleFile("text.txt"); // открывает файл для чтения в бинарном формате
     if (!readbleFile)                                   // если не удалось открыть файл, то ошибка
     {
         cout << "Не удалось открыть файл для чтения" << endl;
@@ -34,6 +34,8 @@ int create_frequency_map(map<string, int> &myMap)
     string key;
     while (readbleFile.get(ch)) // подсчитываем частоту символов в while
     {
+        cout << ch << endl;
+
         if (ch == '\n' || ch == 13)
         {
             key = "cr"; // Используем один ключ для переноса строки
@@ -216,7 +218,7 @@ bool fill_codetext_file(map<string, string> huffmanCodes)
         }
     }
 
-    cout << message;
+    //cout << message;
     //cout << endl << "размер " << message.size() << endl;
     fileToWriteCodes << message.size();
     fileToWriteCodes << '\n';
@@ -344,13 +346,17 @@ void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbol
             {
                 if(pair.second == line)
                 {
-                    cout << line;
+                    //cout << line;
                     //cout << pair.first <<" " << pair.second << endl;
                     if(pair.first == "sp"){writableFile <<" ";}
                     else if(pair.first == "cr"){writableFile << '\n';}
                     else {writableFile << pair.first;}
                     line.clear();
                     countOfSymbols--;
+                    if(countOfSymbols == 0)
+                    {
+                        break;
+                    }
                 }
             }
         }
@@ -437,10 +443,10 @@ int main()
         TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
         generate_huffman_codes(root, "", huffmanCodes);
 
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
 
         fill_codetext_file(huffmanCodes);
         cout << "Успешно сжато";
@@ -472,10 +478,10 @@ int main()
         map<string, string> huffmanCodes;
         TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
         generate_huffman_codes(root, "", huffmanCodes);
-        // for (const auto &pair : huffmanCodes)
-        // {
-        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        // }
+        for (const auto &pair : huffmanCodes)
+        {
+            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        }
 
         ifstream readbleFile("codetext.txt", ifstream::binary);
         string line;
@@ -489,7 +495,7 @@ int main()
         }
     getline(readbleFile, line);
     string count_of_bits = line;
-    int remaining_bits = stoi(line);  // Оставшиеся биты для декодирования
+    //int remaining_bits = stoi(line);  // Оставшиеся биты для декодирования
 
         //decode_huffman_message(huffmanCodes, countOfSymbols, remaining_bits);
         decode_huffman_message(huffmanCodes, countOfSymbols);
