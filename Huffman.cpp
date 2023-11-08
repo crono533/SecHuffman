@@ -23,7 +23,8 @@ public:
 
 int create_frequency_map(map<string, int> &myMap)
 {
-    ifstream readbleFile("text.txt", ifstream::binary); // открывает файл для чтения в бинарном формате
+    //cout << "Inter" << endl;
+    ifstream readbleFile("text.txt"); // открывает файл для чтения в бинарном формате
     if (!readbleFile)                                   // если не удалось открыть файл, то ошибка
     {
         cout << "Не удалось открыть файл для чтения" << endl;
@@ -34,31 +35,13 @@ int create_frequency_map(map<string, int> &myMap)
     string key;
     while (readbleFile.get(ch)) // подсчитываем частоту символов в while
     {
-        if (ch == '\n' || ch == 13)
-        {
-            key = "cr"; // Используем один ключ для переноса строки
-        }
-        else if (ch == ' ')
-        {
-            key = "sp";
-        }
-        else
-        {
-            key = string(1, ch);
-        }
-        //cout << "key:" << key << endl;
-
+        //cout << "Ch " << ch << endl;
         // Используйем оператор [] для увеличения счетчика
+        key = string(1,ch);
+        //cout <<"Key " <<key<< endl;
         myMap[key] += 1;
     }
-    key = "cr";
-    map<string, int>::iterator it = myMap.find(key);
-
-    if (it->first == key)
-    {
-        myMap["cr"] /= 2;
-    }
-
+    
     readbleFile.close();
 
     return 1;
@@ -76,25 +59,25 @@ list<pair<int, string>> sort_frequency_map(map<string, int> mapToSort)
     return sortedList;
 }
 
-int write_table_in_file(list<pair<int, string>> listToWrite)
-{
-    ofstream outputFile("codetext.txt");
-    if (!outputFile.is_open())
-    {
-        cout << "Не удалось открыть файл для записи" << endl;
-        return 0;
-    }
+// int write_table_in_file(list<pair<int, string>> listToWrite)
+// {
+//     ofstream outputFile("codetext.txt");
+//     if (!outputFile.is_open())
+//     {
+//         cout << "Не удалось открыть файл для записи" << endl;
+//         return 0;
+//     }
 
-    for (const auto &pair : listToWrite)
-    {
-        outputFile << pair.second << " " << pair.first << " ";
-    }
-    outputFile << "TAB " << '\n';
+//     for (const auto &pair : listToWrite)
+//     {
+//         outputFile << pair.second << " " << pair.first << " ";
+//     }
+//     outputFile << "TAB " << '\n';
 
-    // Закрыть файл после записи
-    outputFile.close();
-    return 1;
-}
+//     // Закрыть файл после записи
+//     outputFile.close();
+//     return 1;
+// }
 
 void create_list_of_freq(list<pair<int, TreeNode>> &listOfFreq, list<pair<int, string>> &listToParse)
 {
@@ -176,8 +159,28 @@ void build_huffman_tree(list<pair<int, TreeNode>> &listOfFreq)
     // В listOfFreq останется только один элемент - корневой узел дерева Хаффмана
 }
 
-bool fill_codetext_file(map<string, string> huffmanCodes)
+bool fill_codetext_file(map<string, string> huffmanCodes, list<pair<int, string>> listToWrite)
 {
+    ofstream outputFile("codetext.txt", ios::binary);
+    if (!outputFile.is_open()) {
+        cout << "Не удалось открыть файл для записи" << endl;
+        return false;
+    }
+
+    int sizeOfList = listToWrite.size();
+    outputFile.write(reinterpret_cast<const char*>(&sizeOfList), sizeof(sizeOfList)); // Записываем размер списка
+
+    //cout << "173" << endl;
+
+    for (const auto &pair : listToWrite) {
+        int first = pair.first;
+        const string& second = pair.second;
+
+        outputFile.write(second.c_str(), second.size()); // Записываем string как последовательность символов
+        outputFile.write(reinterpret_cast<const char*>(&first), sizeof(first)); // Записываем int
+        
+    }
+
     ifstream readbleFile("text.txt", ifstream::binary); // открывает файл для чтения в бинарном формате
     if (!readbleFile)                                   // если не удалось открыть файл, то ошибка
     {
@@ -185,46 +188,42 @@ bool fill_codetext_file(map<string, string> huffmanCodes)
         return false;
     }
 
-    ofstream fileToWriteCodes("codetext.txt", ios::app);
     char ch;
     string key;
     map<string, string>::iterator it;
     string message;
+
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     if(pair.first == "\n")  
+        //         cout << "FIND";
+        // }
+    
     while (readbleFile.get(ch)) // подсчитываем частоту символов в while
     {
-        if (ch == '\n')
-        {
-            key = "cr";
-            it = huffmanCodes.find(key);
-            message += it->second;
-        }
-        else if (ch == 13)
-        {
-            continue;
-        }
-        else if (ch == ' ')
-        {
-            key = "sp";
-            it = huffmanCodes.find(key);
-            message += it->second;
-        }
-        else
-        {
             key = string(1, ch);
-            it = huffmanCodes.find(key);
-            message += it->second;
-        }
+            // cout << "ch "<<(int)ch << endl; 
+            // cout << "find " << key << endl;
+            for (const auto &pair : huffmanCodes)
+            {
+                if (pair.first == key || pair.first == "\r"){
+                    message += pair.second;
+                    //continue;
+                    }
+            }
+            //it = huffmanCodes.find(key);
+            //message += it->second;
     }
-
-    cout << message;
-    //cout << endl << "размер " << message.size() << endl;
-    fileToWriteCodes << message.size();
-    fileToWriteCodes << '\n';
+    //outputFile << '\n';
+    // cout << message;
+    // cout << endl << "размер " << message.size() << endl;
+    // fileToWriteCodes << message.size();
+    // fileToWriteCodes << '\n';
 
     int byte_count = message.size() / 8; // 1 byte = 8 bits
     int modulo = message.size() % 8;
 
-    //cout << "modulo - " << modulo << endl;
+    // cout << "modulo - " << modulo << endl;
 
 
         int i = 0;
@@ -234,16 +233,16 @@ bool fill_codetext_file(map<string, string> huffmanCodes)
             //cout << b <<endl;
             char value = static_cast<char>(b.to_ulong());
             //cout << "gg " << value << endl;
-            fileToWriteCodes << value;
+            outputFile.write(reinterpret_cast<char*>(&value), sizeof value);
         }
 
 if (modulo > 0)
 {
     bitset<8> b(message.substr(i * 8, modulo) + string(8 - modulo, '0')); // Дополните нулями до 8 бит
     char value = static_cast<char>(b.to_ulong());
-    fileToWriteCodes << value;
+    outputFile.write(reinterpret_cast<char*>(&value), sizeof value);
 }
-        fileToWriteCodes.close();
+        outputFile.close();
         readbleFile.close();
     
     // else
@@ -290,46 +289,75 @@ int string_to_int(const std::string &str)
     return result;
 }
 
-int parse_table_from_file(list<pair<int, string>> &listOfFreq)
+unsigned long long HeadReader(map<char, int> *MK, ifstream &fin) // Для чтения таблицы
 {
-    ifstream table("codetext.txt", ifstream::binary);
-    string line;
-    int countOfSymbols = 0;
-    bool inTable = false; // Флаг, указывающий, что мы находимся в таблице
-
-    while (getline(table, line))
+    int key, q;                      // Объявление переменных для частоты символа и количества символов
+    unsigned long long len = 0;      // Объявление переменной для общей длины данных
+    fin.read((char *)&q, sizeof(q)); // Чтение количества символов из файла
+    char s;                          // Объявление переменной для символа
+    for (int i = 0; i < q; i++)      // Перебор символов
     {
-        istringstream iss(line);
-        string symbol;
-        int key;
-
-        while (iss >> symbol >> key)
-        {
-            listOfFreq.push_back(make_pair(key, symbol));
-            countOfSymbols += key;
-        }
+        fin.read((char *)&s, sizeof(s));     // Чтение символа
+        fin.read((char *)&key, sizeof(key)); // Чтение частоты символа
+        (*MK)[s] = key;                      // Добавление символа и его частоты в словарь
+        len += key;                          // Обновление общей длины данных
     }
-    return countOfSymbols;
+    return len;
 }
 
-void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbols)
+int parse_table_from_file(list<pair<int, string>> &listOfFreq, ifstream& table)
 {
-    ifstream readbleFile("codetext.txt", ifstream::binary);
+    // ifstream table("codetext.txt", ifstream::binary);
+    // string line;
+    // int countOfSymbols = 0;
+    // bool inTable = false; // Флаг, указывающий, что мы находимся в таблице
+
+    // while (getline(table, line))
+    // {
+    //     istringstream iss(line);
+    //     string symbol;
+    //     int key;
+
+    //     while (iss >> symbol >> key)
+    //     {
+    //         listOfFreq.push_back(make_pair(key, symbol));
+    //         countOfSymbols += key;
+    //     }
+    // }
+    // return countOfSymbols;
+    int key, q;
+    unsigned long long len=0;
+    table.read((char*)&q,sizeof(q));
+    char s;
+    // cout << "TEST IN PARSE Q" << q << endl;
+    for(int i=0;i<q;i++){
+        table.read((char*)&s, sizeof(s)); //читаем символ
+        //cout << "TEST IN PARSE 1 "<< endl;
+        table.read((char*)&key,sizeof(key)); //читаем кол-во
+        listOfFreq.push_back(make_pair(key,string(1,s)));
+        len+=key;
+    }
+    return len;
+}
+
+void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbols, ifstream& readbleFile)
+{
+    //ifstream readbleFile("codetext.txt", ifstream::binary);
     ofstream writableFile("decode.txt");
     string line;
 
-    while (getline(readbleFile, line)) //пропускаем таблицу
-    {
-        if (line.find("TAB") != string::npos)
-        {
-            break;
-        }
-    }
+    // while (getline(readbleFile, line)) //пропускаем таблицу
+    // {
+    //     if (line.find("TAB") != string::npos)
+    //     {
+    //         break;
+    //     }
+    // }
 
     char buffer;
     char bit;
-    getline(readbleFile,line);
-    string count_of_bits = line;
+    // getline(readbleFile,line);
+    // string count_of_bits = line;
     //int number_of_bits = stoi(count_of_bits);
     //cout << "how many bits? - " << number_of_bits << endl;
     std::bitset<8> bitset; // Буфер для чтения 8 бит
@@ -344,13 +372,15 @@ void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbol
             {
                 if(pair.second == line)
                 {
-                    cout << line;
+                    // cout << line;
                     //cout << pair.first <<" " << pair.second << endl;
                     if(pair.first == "sp"){writableFile <<" ";}
                     else if(pair.first == "cr"){writableFile << '\n';}
                     else {writableFile << pair.first;}
                     line.clear();
                     countOfSymbols--;
+                    if(countOfSymbols == 0)
+                        return;
                 }
             }
         }
@@ -402,6 +432,8 @@ void decode_huffman_message(map<string, string> &huffmanCodes, int countOfSymbol
 //     }
 // }
 
+
+
 int main()
 {
     int menuFlag = 0;
@@ -423,33 +455,62 @@ int main()
 
         sortedFrequencyOfSymbolsList = sort_frequency_map(frequencyOfSymbols);
 
+        // for (const auto &pair : frequencyOfSymbols)
+        // {
+        //     cout << "sim: " << pair.first << ", freq " << pair.second << endl;
+        // }
+
+
         sort_list_of_freq_not_node(sortedFrequencyOfSymbolsList);
 
-        if (!write_table_in_file(sortedFrequencyOfSymbolsList))
-            return 1;
+        // if (!write_table_in_file(sortedFrequencyOfSymbolsList))
+        //     return 1;
 
         list<pair<int, TreeNode>> myList;
         create_list_of_freq(myList, sortedFrequencyOfSymbolsList);
 
         build_huffman_tree(myList);
 
+        // for (const auto &pair : myList)
+        // {
+        //     cout << "freq: " << pair.first << ", Huffman Code: " << pair.second.symbol << endl;
+        // }
+
         map<string, string> huffmanCodes;
         TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
         generate_huffman_codes(root, "", huffmanCodes);
 
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
 
-        fill_codetext_file(huffmanCodes);
+        fill_codetext_file(huffmanCodes, sortedFrequencyOfSymbolsList);
         cout << "Успешно сжато";
     }
     else if (menuFlag == 2)
     {
+        ifstream readbleFile("codetext.txt", ios::binary); // открывает файл для чтения в бинарном формате
+        if (!readbleFile)                                   // если не удалось открыть файл, то ошибка
+        {
+            cout << "Не удалось открыть файл для чтения" << endl;
+            return 0;
+        }
+
+    // char ch;
+    // string key;
+    // while (readbleFile.get(ch)) // подсчитываем частоту символов в while
+    // {
+    //     cout << "Ch " << ch << endl;
+    // }
+    
+    // readbleFile.close();
+
+
         int countOfSymbols = 0;
         list<pair<int, string>> sortedFrequencyOfSymbolsList;
-        countOfSymbols = parse_table_from_file(sortedFrequencyOfSymbolsList);
+        countOfSymbols = parse_table_from_file(sortedFrequencyOfSymbolsList, readbleFile);
+        //cout << "TEST" << endl;
         //sort_list_of_freq_not_node(sortedFrequencyOfSymbolsList);
 
         // for (const auto &pair : sortedFrequencyOfSymbolsList)
@@ -459,7 +520,7 @@ int main()
 
         list<pair<int, TreeNode>> myList;
         create_list_of_freq(myList, sortedFrequencyOfSymbolsList);
-        cout << "Лист частот" <<endl;
+        // cout << "Лист частот" <<endl;
         // for (const auto &pair : myList)
         // {
         //     cout << "Key: " << pair.first << ", Symb: " << pair.second.symbol << endl;
@@ -477,22 +538,22 @@ int main()
         //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
         // }
 
-        ifstream readbleFile("codetext.txt", ifstream::binary);
-        string line;
+    //     ifstream readbleFile("codetext.txt", ifstream::binary);
+    //     string line;
 
-        while (getline(readbleFile, line)) // пропускаем таблицу
-        {
-            if (line.find("TAB") != string::npos)
-            {
-                break;
-            }
-        }
-    getline(readbleFile, line);
-    string count_of_bits = line;
-    int remaining_bits = stoi(line);  // Оставшиеся биты для декодирования
+    //     while (getline(readbleFile, line)) // пропускаем таблицу
+    //     {
+    //         if (line.find("TAB") != string::npos)
+    //         {
+    //             break;
+    //         }
+    //     }
+    // getline(readbleFile, line);
+    // string count_of_bits = line;
+    // int remaining_bits = stoi(line);  // Оставшиеся биты для декодирования
 
         //decode_huffman_message(huffmanCodes, countOfSymbols, remaining_bits);
-        decode_huffman_message(huffmanCodes, countOfSymbols);
+        decode_huffman_message(huffmanCodes, countOfSymbols, readbleFile);
         cout << "Успешно распаковано";
 
     }
