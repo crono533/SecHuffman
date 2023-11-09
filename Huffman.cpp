@@ -35,10 +35,10 @@ int create_frequency_map(map<string, int> &myMap)
     string key;
     while (readbleFile.get(ch)) // подсчитываем частоту символов в while
     {
-        cout << "Ch " << ch << endl;
+        //cout << "Ch " << ch << endl;
         // Используйем оператор [] для увеличения счетчика
         key = string(1,ch);
-        cout <<"Key " <<key<< endl;
+        //cout <<"Key " <<key<< endl;
         myMap[key] += 1;
     }
     
@@ -455,10 +455,10 @@ int main()
 
         sortedFrequencyOfSymbolsList = sort_frequency_map(frequencyOfSymbols);
 
-        for (const auto &pair : frequencyOfSymbols)
-        {
-            cout << "sim: " << pair.first << ", freq " << pair.second << endl;
-        }
+        // for (const auto &pair : frequencyOfSymbols)
+        // {
+        //     cout << "sim: " << pair.first << ", freq " << pair.second << endl;
+        // }
 
 
         sort_list_of_freq_not_node(sortedFrequencyOfSymbolsList);
@@ -471,19 +471,19 @@ int main()
 
         build_huffman_tree(myList);
 
-        for (const auto &pair : myList)
-        {
-            cout << "freq: " << pair.first << ", Huffman Code: " << pair.second.symbol << endl;
-        }
+        // for (const auto &pair : myList)
+        // {
+        //     cout << "freq: " << pair.first << ", Huffman Code: " << pair.second.symbol << endl;
+        // }
 
         map<string, string> huffmanCodes;
         TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
         generate_huffman_codes(root, "", huffmanCodes);
 
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
         if(sortedFrequencyOfSymbolsList.size() == 1)
         {
             for( auto &pair : huffmanCodes)
@@ -491,10 +491,10 @@ int main()
                 pair.second = "0";
             }
         }
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
 
         fill_codetext_file(huffmanCodes, sortedFrequencyOfSymbolsList);
         cout << "Успешно сжато";
@@ -532,10 +532,10 @@ int main()
         list<pair<int, TreeNode>> myList;
         create_list_of_freq(myList, sortedFrequencyOfSymbolsList);
         // cout << "Лист частот" <<endl;
-        for (const auto &pair : myList)
-        {
-            cout << "Key: " << pair.first << ", Symb: " << pair.second.symbol << endl;
-        }
+        // for (const auto &pair : myList)
+        // {
+        //     cout << "Key: " << pair.first << ", Symb: " << pair.second.symbol << endl;
+        // }
 
         build_huffman_tree(myList);
         // cout << "Коды хаффмана" << endl;
@@ -544,10 +544,10 @@ int main()
         map<string, string> huffmanCodes;
         TreeNode *root = &myList.front().second; // Получаем адрес корневого узла из списка
         generate_huffman_codes(root, "", huffmanCodes);
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
 
         if(sortedFrequencyOfSymbolsList.size() == 1)
         {
@@ -556,10 +556,10 @@ int main()
                 pair.second = "0";
             }
         }
-        for (const auto &pair : huffmanCodes)
-        {
-            cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
-        }
+        // for (const auto &pair : huffmanCodes)
+        // {
+        //     cout << "Symbol: " << pair.first << ", Huffman Code: " << pair.second << endl;
+        // }
 
         //decode_huffman_message(huffmanCodes, countOfSymbols, remaining_bits);
         decode_huffman_message(huffmanCodes, countOfSymbols, readbleFile);
