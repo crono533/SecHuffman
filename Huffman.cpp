@@ -289,22 +289,6 @@ int string_to_int(const std::string &str)
     return result;
 }
 
-unsigned long long HeadReader(map<char, int> *MK, ifstream &fin) // Для чтения таблицы
-{
-    int key, q;                      // Объявление переменных для частоты символа и количества символов
-    unsigned long long len = 0;      // Объявление переменной для общей длины данных
-    fin.read((char *)&q, sizeof(q)); // Чтение количества символов из файла
-    char s;                          // Объявление переменной для символа
-    for (int i = 0; i < q; i++)      // Перебор символов
-    {
-        fin.read((char *)&s, sizeof(s));     // Чтение символа
-        fin.read((char *)&key, sizeof(key)); // Чтение частоты символа
-        (*MK)[s] = key;                      // Добавление символа и его частоты в словарь
-        len += key;                          // Обновление общей длины данных
-    }
-    return len;
-}
-
 int parse_table_from_file(list<pair<int, string>> &listOfFreq, ifstream& table)
 {
     // ifstream table("codetext.txt", ifstream::binary);
