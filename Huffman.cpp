@@ -152,7 +152,7 @@ void build_huffman_tree(list<pair<int, TreeNode>> &listOfFreq)
         parentNode.symbol = leftNode.symbol + rightNode.symbol;
         parentNode.leftChild = new TreeNode(leftNode);
         parentNode.rightChild = new TreeNode(rightNode);
-
+        //хай
         // Добавляем новый узел в список
         listOfFreq.push_back(make_pair(parentNode.freq, parentNode));
     }
